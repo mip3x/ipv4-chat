@@ -8,8 +8,6 @@
 #include "../include/common.h"
 
 #define OPTSTR "va:p:h"
-#define DEFAULT_IP "127.0.0.1"
-#define DEFAULT_PORT 42424
 
 extern int errno;
 extern char* optarg;
@@ -23,7 +21,7 @@ typedef struct {
 
 int main(int argc, char* argv[]) {
     int opt;
-    options_t options = { 0, DEFAULT_IP, DEFAULT_PORT };
+    options_t options = { 0, NULL, 0 };
 
     opterr = 0;
 
@@ -35,8 +33,8 @@ int main(int argc, char* argv[]) {
 
             case 'a':
                 if (isValidIpAddress(optarg)) {
+                    options.ip_addr = malloc(sizeof(char) * IP_ADDR_LEN);
                     strcpy(options.ip_addr, optarg);
-                    printf("ipv4_addr: \n%s", optarg);
                     break;
                 }
                 usage(argv[0], opt);
@@ -47,7 +45,6 @@ int main(int argc, char* argv[]) {
                 if (errno != 0)
                     usage(argv[0], opt);
 
-                printf("port: %d\n", options.port);
                 break;
 
             case 'h':
@@ -56,6 +53,14 @@ int main(int argc, char* argv[]) {
                 break;
         }
     }
+
+    if (options.ip_addr == NULL || options.port == 0) {
+        usage(argv[0], opt);
+    }
+
+    printf("verbose flag: %b\n", options.verbose);
+    printf("ip_addr: %s\n", options.ip_addr);
+    printf("port: %d\n", options.port);
 
     return EXIT_SUCCESS;
 }

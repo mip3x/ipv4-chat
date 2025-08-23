@@ -58,9 +58,9 @@ int main(int argc, char* argv[]) {
         usage(argv[0], opt);
     }
 
-    printf("verbose flag: %b\n", options.verbose);
-    printf("ip_addr: %s\n", options.ip_addr);
-    printf("port: %d\n", options.port);
+    /*printf("verbose flag: %b\n", options.verbose);*/
+    /*printf("ip_addr: %s\n", options.ip_addr);*/
+    /*printf("port: %d\n", options.port);*/
 
     return EXIT_SUCCESS;
 }

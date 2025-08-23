@@ -1,4 +1,6 @@
 #include <arpa/inet.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -12,6 +14,44 @@ bool isValidIpAddress(char *ip_addr) {
     return result == 1;
 }
 
+static argument_t mandatory_arguments[MANDATORY_ARGS_NUMBER] = {
+    { 'a', "[address]: ipv4 address where the program will expect to receive messages from its other copies" },
+    { 'p', "[port]: similar to [address], but port" },
+};
+
+static argument_t optional_arguments[OPTIONAL_ARGS_NUMBER] = {
+    { 'v', "[verbose]: detailed output" },
+    { 'h', "[help]: output auxiliary information" },
+};
+
+static void printMandatoryArguments() {
+    fprintf(stdout, "Mandatory arguments:\n");
+
+    for (size_t i = 0; i < MANDATORY_ARGS_NUMBER; i++) {
+        fprintf(stdout, 
+                "\t-%c\t%s\n",
+                mandatory_arguments[i].flag,
+                mandatory_arguments[i].description);
+    }
+}
+
+static void printOptionalArguments() {
+    fprintf(stdout, "Optional arguments:\n");
+
+    for (size_t i = 0; i < OPTIONAL_ARGS_NUMBER; i++) {
+        fprintf(stdout, 
+                "\t-%c\t%s\n",
+                optional_arguments[i].flag,
+                optional_arguments[i].description);
+    }
+}
+
+static void printHelpMessage() {
+    fprintf(stdout, "Start IPv4 chat session. Chat works only in Local Area Network (LAN) via UDP broadcast.\n\n");
+    printMandatoryArguments();
+    fprintf(stdout, "\n");
+    printOptionalArguments();
+}
 
 void usage(char* progname, int opt) {
     fprintf(stdout, USAGE_FMT, progname);
@@ -26,6 +66,7 @@ void usage(char* progname, int opt) {
             break;
 
         case 'h':
+            printHelpMessage();
             exit(EXIT_SUCCESS);
 
         default:

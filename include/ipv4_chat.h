@@ -4,7 +4,7 @@
 #include "common.h"
 
 #define NICKNAME_MAX_LEN 50
-#define CHAT_MSG_MAX_LEN 1000
+#define MSG_MAX_LEN 1000
 
 struct ipv4_chat {
     char *nickname;

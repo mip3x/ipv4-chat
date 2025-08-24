@@ -58,7 +58,7 @@ static void handle_probe_is_free(struct ipv4_chat *chat,
 
     const char *reply = (strcmp(chat->nickname, sender_nickname) == 0) ? "NOT_OK" : "OK";
 
-    if (chat->options.verbose) printf("Sending %s to %s\n", reply, inet_ntoa(sender->sin_addr));
+    if (chat->options.verbose) printf("Sending %s\n", reply);
     send_text(chat->bind_fd, sender, reply);
 }
 
@@ -123,7 +123,7 @@ void *listener_thread(void *argument) {
         rcv_msg_buf[rcv_msg_len] = '\0';
 
         if (strncmp(rcv_msg_buf, NICKNAME_HANDSHAKE_Q, strlen(NICKNAME_HANDSHAKE_Q)) == 0) {
-            handle_probe_is_free(chat, &sender, rcv_msg_buf);
+            handle_probe_is_free(chat, &chat->broadcast_addr, rcv_msg_buf);
             continue;
         }
 
@@ -132,7 +132,7 @@ void *listener_thread(void *argument) {
             if (inet_ntop(AF_INET, &sender.sin_addr, sender_ip, sizeof sender_ip) == NULL)
                 continue;
 
-            if (strncmp(chat->nickname, nickname, strlen(nickname)) != 0)
+            if (strcmp(chat->nickname, nickname) != 0)
                 safe_print(chat->print_mtx, "\n[%s] <%s>: %s\n>> ", sender_ip, nickname, text);
         } 
     }

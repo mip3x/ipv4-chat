@@ -220,9 +220,8 @@ static bool wait_for_handshakes(int fd, const char *host_ip) {
 
         struct in_addr host;
         if (inet_pton(AF_INET, host_ip, &host) != 1) return false;
-        if (hs_src.sin_addr.s_addr == host.s_addr) continue;
 
-        if (strncmp(buf, "NOT_OK", 6) == 0) {
+        if (strncmp(buf, "NOT_OK", strlen("NOT_OK")) == 0) {
             conflict = true;
             break;
         }

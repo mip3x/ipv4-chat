@@ -15,7 +15,7 @@ extern char* optarg;
 extern int opterr, optind;
 
 int main(int argc, char* argv[]) {
-    int opt;
+    int opt, port_candidate;
     options_t options = { 0, NULL, 0 };
 
     opterr = 0;
@@ -36,9 +36,15 @@ int main(int argc, char* argv[]) {
                 break;
 
             case 'p':
-                options.port = atoi(optarg);
+                port_candidate = atoi(optarg);
+
+                if (port_candidate < 1 || port_candidate > 65535)
+                    errno = EINVAL;
+
                 if (errno != 0)
                     usage(argv[0], opt);
+
+                options.port = (uint32_t)port_candidate;
 
                 break;
 

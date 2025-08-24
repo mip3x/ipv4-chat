@@ -79,7 +79,7 @@ void usage(char* progname, int opt) {
             break;
 
         case 'p':
-            print_error("Incorrect `port` argument: value should be integer");
+            print_error("Incorrect `port` argument: value should be integer from 1 to 65535");
             break;
 
         case 'h':

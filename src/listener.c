@@ -58,7 +58,10 @@ static void handle_probe_is_free(struct ipv4_chat *chat,
 
     const char *reply = (strcmp(chat->nickname, sender_nickname) == 0) ? "NOT_OK" : "OK";
 
-    if (chat->options.verbose) printf("Sending %s\n", reply);
+    if (chat->options.verbose) {
+        printf("Sending %s\n>> ", reply);
+        fflush(stdout);
+    }
     send_text(chat->bind_fd, sender, reply);
 }
 

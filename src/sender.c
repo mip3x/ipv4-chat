@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,23 +46,30 @@ void *sender_thread(void *argument) {
 
         if (len == 0) continue;
 
-        size_t packet_size = sizeof(MSG_START_IDENTIFIER) + 1 +
-            strlen(chat->nickname) + 1 +
-            (size_t)len;
+        size_t start_id_len = strlen(MSG_START_IDENTIFIER);
+        size_t nickname_len = strlen(chat->nickname);
+        size_t msg_len = (size_t)len;
+        size_t packet_size = start_id_len + 1 + nickname_len + 1 + msg_len + 1;
 
         char *packet = malloc(packet_size);
-        if (!packet) continue;
+        if (!packet) {
+            print_error("malloc: %s", strerror(errno));
+            continue;
+        }
 
-        snprintf(packet, packet_size, "%s %s %s",
+        int packet_comb_res = snprintf(packet, packet_size, "%s %s %s",
                  MSG_START_IDENTIFIER, chat->nickname, inputbuf);
 
-        ssize_t n =sendto(chat->bind_fd, packet, strlen(packet), 0,
-               (const struct sockaddr*)&chat->broadcast_addr, sizeof(chat->broadcast_addr));
-        if (n == -1) {
-            perror("sendto br failed");
-        } else {
-            puts("sending msg to bc...");
+        if (packet_comb_res < 0) {
+            print_error("snprintf: %s", strerror(errno));
+            free(packet);
+            continue;
         }
+
+        ssize_t n = sendto(chat->bind_fd, packet, strlen(packet), 0,
+               (const struct sockaddr*)&chat->broadcast_addr, sizeof(chat->broadcast_addr));
+
+        if (n == -1) print_error("sendto: %s", strerror(errno));
 
         free(packet);
     }

@@ -21,7 +21,7 @@
 
 static int get_broadcast_by_ip(const char *ip_str, struct in_addr *out_bcast) {
     if (!ip_str || !out_bcast) {
-        perror("get_broadcast_by_ip: ip_str || out_bcast is NULL");
+        perror("get_broadcast_by_ip: arg is NULL");
         return -1;
     }
 
@@ -33,7 +33,7 @@ static int get_broadcast_by_ip(const char *ip_str, struct in_addr *out_bcast) {
 
     struct ifaddrs *interfaces = NULL;
     if (getifaddrs(&interfaces) == -1) {
-        print_error("getifaddrs failed");
+        print_error("getifaddrs: %s", strerror(errno));
         return -1;
     }
 
@@ -63,7 +63,8 @@ static int get_broadcast_by_ip(const char *ip_str, struct in_addr *out_bcast) {
 static int setup_sockets(const char *host_ip,
                          const uint16_t port,
                          struct sockaddr_in *bind_addr, 
-                         struct sockaddr_in *broadcast_addr) {
+                         struct sockaddr_in *broadcast_addr,
+                         bool verbose) {
     int bind_fd;
     if ((bind_fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1){
         print_error("socket: %s", strerror(errno));
@@ -110,6 +111,12 @@ static int setup_sockets(const char *host_ip,
         return -1;
     }
     broadcast_addr->sin_addr = network_broadcast;
+
+    if (verbose) {
+        char bcbuf[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &network_broadcast, bcbuf, sizeof bcbuf);
+        printf("broadcast resolved: %s:%u\n", bcbuf, port);
+    }
 
     return bind_fd;
 }
@@ -267,7 +274,8 @@ int nickname_handshake(struct ipv4_chat *chat) {
     chat->bind_fd = setup_sockets(chat->options.ip_addr,
                                   chat->options.port,
                                   &chat->bind_addr,
-                                  &chat->broadcast_addr);
+                                  &chat->broadcast_addr,
+                                  chat->options.verbose);
     if (chat->bind_fd == -1) return -1;
 
     for (;;) {

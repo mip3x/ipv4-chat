@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <uchar.h>
 
-#define USAGE_FMT "%s [-v] [-a ipv4_address (default 127.0.0.1) ] [-p port (default 42424)] [-h]\n"
+#define USAGE_FMT "%s [-v] [-a ipv4_address] [-p port] [-h]\n"
 #define IP_ADDR_LEN 16
 #define MANDATORY_ARGS_NUMBER 2
 #define OPTIONAL_ARGS_NUMBER 2

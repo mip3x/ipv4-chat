@@ -39,9 +39,10 @@ static void handle_probe_is_free(struct ipv4_chat *chat,
                                  const struct sockaddr_in *sender,
                                  const char *buf) {
     const char *bufp = buf;
-    if (strncmp(bufp, NICKNAME_HANDSHAKE_Q, strlen(NICKNAME_HANDSHAKE_Q)) != 0)
+    size_t qlen = strlen(NICKNAME_HANDSHAKE_Q);
+    if (strncmp(bufp, NICKNAME_HANDSHAKE_Q, qlen) != 0)
         return;
-    bufp += sizeof NICKNAME_HANDSHAKE_Q;
+    bufp += qlen;
 
     while (*bufp == ' ')
         ++bufp;
@@ -55,21 +56,18 @@ static void handle_probe_is_free(struct ipv4_chat *chat,
     if (!sender_nickname[0])
         return;
 
-    if (chat->nickname && strcmp(chat->nickname, sender_nickname) == 0) {
-        if (chat->options.verbose) printf("Sending NOT_OK to %s\n", inet_ntoa(sender->sin_addr));
-        send_text(chat->bind_fd, sender, "NOT_OK");
-    }
-    else {
-        if (chat->options.verbose) printf("Sending OK to %s\n", inet_ntoa(sender->sin_addr));
-        send_text(chat->bind_fd, sender, "OK");
-    }
+    const char *reply = (strcmp(chat->nickname, sender_nickname) == 0) ? "NOT_OK" : "OK";
+
+    if (chat->options.verbose) printf("Sending %s to %s\n", reply, inet_ntoa(sender->sin_addr));
+    send_text(chat->bind_fd, sender, reply);
 }
 
 static int parse_msg(const char *buf, char nickname[NICKNAME_MAX_LEN + 1], char text[MSG_MAX_LEN + 1]) {
     const char *pbuf = buf;
-    if (strncmp(pbuf, MSG_START_IDENTIFIER, strlen(MSG_START_IDENTIFIER)) != 0)
+    size_t idlen = strlen(MSG_START_IDENTIFIER);
+    if (strncmp(pbuf, MSG_START_IDENTIFIER, idlen) != 0)
         return -1;
-    pbuf += strlen(MSG_START_IDENTIFIER);
+    pbuf += idlen;
 
     while (*pbuf == ' ')
         ++pbuf;
@@ -97,8 +95,10 @@ void *listener_thread(void *argument) {
     struct ipv4_chat *chat = argument;
 
     struct in_addr host_ip;
-    if (inet_pton(AF_INET, chat->options.ip_addr, &host_ip) != 1)
-        return false;
+    if (inet_pton(AF_INET, chat->options.ip_addr, &host_ip) != 1) {
+        print_error("inet_pton[listener_thread]: %s", strerror(errno));
+        return NULL;
+    }
 
     char rcv_msg_buf[MSG_MAX_LEN + NICKNAME_MAX_LEN];
     char nickname[NICKNAME_MAX_LEN + 1];
@@ -122,8 +122,6 @@ void *listener_thread(void *argument) {
         if (rcv_msg_len <= 0) continue;
         rcv_msg_buf[rcv_msg_len] = '\0';
 
-        if (sender.sin_addr.s_addr == host_ip.s_addr) continue;
-
         if (strncmp(rcv_msg_buf, NICKNAME_HANDSHAKE_Q, strlen(NICKNAME_HANDSHAKE_Q)) == 0) {
             handle_probe_is_free(chat, &sender, rcv_msg_buf);
             continue;
@@ -134,7 +132,8 @@ void *listener_thread(void *argument) {
             if (inet_ntop(AF_INET, &sender.sin_addr, sender_ip, sizeof sender_ip) == NULL)
                 continue;
 
-            safe_print(chat->print_mtx, "[%s] <%s>: %s\n", sender_ip, nickname, text);
+            if (strncmp(chat->nickname, nickname, strlen(nickname)) != 0)
+                safe_print(chat->print_mtx, "\n[%s] <%s>: %s\n>> ", sender_ip, nickname, text);
         } 
     }
 

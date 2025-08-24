@@ -58,8 +58,14 @@ int main(int argc, char* argv[]) {
     printf("port: %d\n", options.port);
 
     struct ipv4_chat ipv4_chat = { .nickname = NULL, .options = options };
-    if (ipv4_chat_handshake(&ipv4_chat) == -1)
+    if (nickname_handshake(&ipv4_chat) == -1)
         return EXIT_FAILURE;
 
+    if (run(&ipv4_chat) == -1) {
+        if (ipv4_chat.options.verbose) puts("Program finished unsuccessfully");
+        return EXIT_FAILURE;
+    }
+
+    if (ipv4_chat.options.verbose) puts("Program finished successfully");
     return EXIT_SUCCESS;
 }

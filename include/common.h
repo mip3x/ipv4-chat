@@ -24,5 +24,6 @@ typedef struct {
 bool is_valid_ip_addr(char *ip_addr);
 void print_error(const char *fmt, ...);
 void usage(char* progname, int opt);
+void clear_stdin(void);
 
 #endif

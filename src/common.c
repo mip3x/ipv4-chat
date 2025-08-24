@@ -9,6 +9,11 @@
 
 #include "../include/common.h"
 
+void clear_stdin(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
 bool is_valid_ip_addr(char *ip_addr) {
     struct sockaddr_in sa;
     int result = inet_pton(AF_INET, ip_addr, &(sa.sin_addr));

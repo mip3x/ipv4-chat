@@ -1,5 +1,5 @@
 # ipv4-chat
-Simple IPv4 chat on LAN running via UDP broadcast. Each participant has equal rights. Each participant can see the messages of others.
+Simple IPv4 chat on LAN running via UDP broadcast. Each participant has equal rights. Each participant can see the messages of others
 
 ## Installation
 ### Prerequisites
